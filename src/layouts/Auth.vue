@@ -6,7 +6,7 @@
           <v-card>
             <v-card-text>
               <div class="text-center mb-4">
-<!--                <img src="../assets/logo.png" width="80" height="80" />-->
+                <img style="border-radius: 50%" src="../assets/logo.jpeg" width="80" height="80" />
               </div>
 
               <transition name="fade" mode="out-in">
