@@ -38,6 +38,13 @@ export default new Vuex.Store({
                 }
             });
         },
+        register: async ({dispatch}, payload) => {
+            return await axios.post('/register', payload).then(response => {
+                if (response.status === 200) {
+                    dispatch('OnTokenCallback', response)
+                }
+            });
+        },
         OnTokenCallback: ({commit}, response) => {
             // Save data to store
             const expired = response.data.expires_in;

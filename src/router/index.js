@@ -5,6 +5,7 @@ import Login from "@/views/auth/Login";
 import store from "@/store";
 import DashboardLayout from "../layouts/Dashboard";
 import Profile from "../views/profile/Profile";
+import Registration from "../views/auth/Registration";
 
 Vue.use(VueRouter);
 
@@ -18,6 +19,18 @@ const routes = [
                 path: "/login",
                 name: "login",
                 component: Login,
+                props: true,
+                meta: {
+                    authRequired: false
+                }
+            },
+            {
+                path: "/registration",
+                name: "registration",
+                component: Registration,
+                meta: {
+                    authRequired: false
+                }
             },
         ],
     },
@@ -32,6 +45,9 @@ const routes = [
                 component: Profile,
             },
         ],
+        meta: {
+            authRequired: true
+        }
     },
 ];
 
@@ -45,9 +61,12 @@ const isLoginPage = name => name === 'login'
 
 const currentTime = (new Date()).getTime();
 
-
-
 router.beforeEach((to, from, next) => {
+    if (!to.meta.authRequired) {
+        next()
+        return
+    }
+
     const expired = store.getters.expired || 0
     const tokenIsNull = () => !store.getters.access_token
     const tokenExpired = () => !tokenIsNull() && (expired === 0 || parseInt(expired) < currentTime)

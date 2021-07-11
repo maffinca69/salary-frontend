@@ -13,6 +13,15 @@
         prepend-icon="mdi-lock"
         type="password"
         v-model="form.password"
+        :error-messages="errorMessages.password"
+        required
+    ></v-text-field>
+
+    <v-text-field
+        label="Подтверждение пароля"
+        prepend-icon="mdi-lock"
+        type="password"
+        v-model="form.password_confirmation"
         required
     ></v-text-field>
 
@@ -24,14 +33,14 @@
           type="submit"
           text
           rounded
-      >{{ 'Войти' }}</v-btn>
+      >{{ 'Зарегистрироваться' }}</v-btn>
       <v-btn
-          @click="register"
+          @click.prevent="login"
           color="primary"
           large
           text
           rounded
-      >{{ 'Регистрация' }}</v-btn>
+      >{{ 'Войти' }}</v-btn>
     </div>
   </v-form>
 </template>
@@ -40,42 +49,34 @@
 // import axios from '@/plugins/axios'
 
 export default {
-  data: () => ({
-    form: {
-      username: null,
-      password: null,
-    },
-    errorMessages: {},
-    loading: false,
-  }),
-  props: {
-    username: {
-      type: String,
-      default: ''
-    }
-  },
-  mounted() {
-    if (this.username) {
-      this.form.password = null
-      this.form.username = this.username
-    }
+  data() {
+    return {
+      form: {
+        username: null,
+        password: null,
+      },
+      errorMessages: {},
+      loading: false,
+    };
   },
   methods: {
     async validate() {
       if (this.$refs.form.validate()) {
         this.loading = true;
         this.errorMessages = {}
-        await this.login(this.form).catch(error => {
+        await this.register(this.form).then(() => {
+          this.$router.push({name: 'login', params: {username: this.form.username}})
+        }).catch(error => {
           this.errorMessages = error.response.data.errors
         });
         this.loading = false;
       }
     },
-    async login(form) {
-      return this.$store.dispatch('login', form)
+    async register(form) {
+      return this.$store.dispatch('register', form)
     },
-    register() {
-      this.$router.push({name: 'registration'})
+    login() {
+      this.$router.push({name: 'login'})
     }
   },
 };
