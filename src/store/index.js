@@ -11,7 +11,8 @@ export default new Vuex.Store({
             access_token: localStorage.getItem('access_token'),
             expired: localStorage.getItem('expired_at'),
             user: {},
-        }
+        },
+        statistic: {},
     },
     mutations: {
         setAccessToken: (state, accessToken) => {
@@ -22,6 +23,9 @@ export default new Vuex.Store({
         },
         setUser: (state, user) => {
             state.auth.user = user;
+        },
+        setStatistic: (state, payload) => {
+            state.statistic = payload;
         },
         // delete all auth and user information from the state
         clearAuthData: state => {
@@ -38,12 +42,9 @@ export default new Vuex.Store({
                 }
             });
         },
+        // eslint-disable-next-line no-unused-vars
         register: async ({dispatch}, payload) => {
-            return await axios.post('/register', payload).then(response => {
-                if (response.status === 200) {
-                    dispatch('OnTokenCallback', response)
-                }
-            });
+            return await axios.post('/register', payload);
         },
         OnTokenCallback: ({commit}, response) => {
             // Save data to store
@@ -84,11 +85,20 @@ export default new Vuex.Store({
                 }
             })
         },
+        // eslint-disable-next-line no-unused-vars
+        statistic: async ({commit}, payload) => {
+            return await axios.get('/dashboard', {params: payload}).then(response => {
+                if (response.status === 200) {
+                    commit('setStatistic', response.data.data)
+                }
+            })
+        },
     },
     modules: {},
     getters: {
         user: state => state.auth.user,
         access_token: state => state.auth.access_token,
-        expired: state => state.auth.expired
+        expired: state => state.auth.expired,
+        statistic: state => state.statistic,
     }
 });

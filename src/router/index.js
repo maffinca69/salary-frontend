@@ -5,6 +5,7 @@ import Login from "@/views/auth/Login";
 import store from "@/store";
 import DashboardLayout from "../layouts/Dashboard";
 import Profile from "../views/profile/Profile";
+import Index from '@/views/dashboard/Index'
 import Registration from "../views/auth/Registration";
 
 Vue.use(VueRouter);
@@ -21,7 +22,8 @@ const routes = [
                 component: Login,
                 props: true,
                 meta: {
-                    authRequired: false
+                    authRequired: false,
+                    title: 'Вход'
                 }
             },
             {
@@ -29,7 +31,8 @@ const routes = [
                 name: "registration",
                 component: Registration,
                 meta: {
-                    authRequired: false
+                    authRequired: false,
+                    title: 'Регистрация'
                 }
             },
         ],
@@ -37,16 +40,29 @@ const routes = [
     {
         path: '/',
         name: 'home',
+        redirect: '/index',
         component: DashboardLayout,
         children: [
+            {
+                path: 'index',
+                name: 'index',
+                component: Index,
+                meta: {
+                    title: 'Главная страница'
+                }
+            },
             {
                 path: '/profile',
                 name: "profile",
                 component: Profile,
+                meta: {
+                    title: 'Профиль'
+                }
             },
         ],
         meta: {
-            authRequired: true
+            authRequired: true,
+            title: 'Главная'
         }
     },
 ];
@@ -60,6 +76,14 @@ let router = new VueRouter({
 const isLoginPage = name => name === 'login'
 
 const currentTime = (new Date()).getTime();
+
+router.afterEach((to) => {
+    if (to.meta.title) {
+        Vue.nextTick(() => {
+            document.title = to.meta.title;
+        })
+    }
+});
 
 router.beforeEach((to, from, next) => {
     if (!to.meta.authRequired) {

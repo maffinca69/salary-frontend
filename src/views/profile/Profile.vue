@@ -14,7 +14,7 @@
                   </div>
                 </transition>
               </v-row>
-              <v-row align="center" justify="center" class="mt-5">
+              <v-row align="center" justify="center" class="mt-5 text-center">
                 Тут должна была быть аватарка, но ее нет ¯\_(ツ)_/¯
               </v-row>
             </v-container>
@@ -54,9 +54,15 @@
                 label="Подтверждение пароля"/>
           </v-card-text>
           <v-card-actions>
-            <v-btn block :disabled="disableFields" color="success" :loading="disableFields" @click.prevent="validate">
+            <v-btn block :disabled="disableFields" color="primary" :loading="disableFields" @click.prevent="validate">
               <v-icon left dark>mdi-content-save</v-icon>
               Сохранить
+            </v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn block class="white--text" :disabled="disableFields" color="red" :loading="disableFields" @click.prevent="$modal.open(redmineModal)">
+              <v-icon left dark>mdi-content-save</v-icon>
+              Интеграция с Redmine
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -72,12 +78,16 @@ import axios from '@/plugins/axios'
 export default {
   name: "Profile",
   data: () => ({
+    redmineModal: 'redmine-integration-modal',
     loading: false,
     disable: false,
     form: {
       first_name: '',
       last_name: '',
       username: '',
+      userData: {
+
+      }
     },
     errorMessages: {},
     colors: [
