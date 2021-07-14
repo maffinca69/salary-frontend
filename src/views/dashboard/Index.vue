@@ -1,177 +1,187 @@
 <template>
-  <v-container fluid class="ma-3">
-    <v-row class="mb-6" no-gutters>
-      <v-col>
-        <h2>Dashboard</h2>
-
-        <div class="mt-5 mb-5">
-          <v-row>
+  <v-container>
+    <v-row class="ma-0 ma-md-3" v-if="!loading">
+      <v-col cols="12" md="4">
+        <v-card outlined class="pa-6" width="100%">
+          <transition name="fade" mode="out-in">
+          <v-row :key="showLossInfo">
             <v-col>
-              <v-card outlined class="pa-5" max-width="280">
-                <v-row>
-                  <v-col>
-                    <span>Зарплата</span>
-                    <h1>170.500</h1>
-                  </v-col>
-                  <v-col class="mt-4 text-center align-content-center justify-center">
-                    <v-icon x-large color="green" class="ms-6 me-6">mdi-currency-rub</v-icon>
-                  </v-col>
-                </v-row>
-              </v-card>
+              <span>Зарплата</span>
+              <h1>{{ (showLossInfo ? losses.loss_salary : info.currentMonth.salary).toLocaleString('hi-IN') + ' ₽' }}</h1>
             </v-col>
-            <v-col>
-              <v-card outlined class="pa-5" max-width="280">
-                <v-row>
-                <v-col>
-                  <span>Затрекано</span>
-                  <h1>116 ч.</h1>
-                </v-col>
-                <v-col class="mt-4 text-center align-content-center justify-center">
-                  <v-icon x-large color="blue" class="ms-6 me-6">mdi-clock</v-icon>
-                </v-col>
-              </v-row>
-              </v-card>
-            </v-col>
-            <v-col>
-              <v-card outlined class="pa-5" max-width="280">
-                <v-row>
-                  <v-col>
-                    <span>Премия</span>
-                    <h1>9.900</h1>
-                  </v-col>
-                  <v-col class="mt-4 text-center align-content-center justify-center">
-                    <v-icon x-large color="green" class="ms-6 me-6">mdi-currency-rub</v-icon>
-                  </v-col>
-                </v-row>
-              </v-card>
+            <v-col class="mt-4" md="4">
+              <v-icon x-large :color="showLossInfo ? 'red' : 'green'">mdi-currency-rub</v-icon>
             </v-col>
           </v-row>
-        </div>
-
-        <div class="text-center mt-2">
-          <v-skeleton-loader max-width="calc(100% - 32px)" transition="scale-transition" :loading="!info.short_labels"
-                             type="image">
-            <v-sheet
-                class="v-sheet--offset white"
-                outlined
-                elevation="1"
-                :rounded="'lg'"
-                max-width="calc(100% - 32px)"
-            >
-              <v-sparkline
-                  :labels="info.short_labels"
-                  :value="info.values"
-                  stroke-linecap="round"
-                  auto-draw
-                  label-size="5"
-                  :smooth="radius || false"
-                  color="light-blue accent-4"
-                  line-width="2"
-                  padding="16"
-              ></v-sparkline>
-            </v-sheet>
-          </v-skeleton-loader>
-        </div>
+          </transition>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-card outlined class="pa-6" width="100%">
+            <v-row :key="showLossInfo">
+              <v-col>
+                <span>Выработка</span>
+                <v-tooltip v-if="showLossInfo" top>
+                  <template v-slot:activator="{ on, attrs }">
+                    <h1 v-bind="attrs" v-on="on">{{ losses.loss_hours }}</h1>
+                  </template>
+                  <span>Рабочие часы, которые не были отмечены</span>
+                </v-tooltip>
+                <h1 v-else>{{ showLossInfo ? losses.loss_hours : info.currentMonth.hours }}</h1>
+              </v-col>
+              <v-col class="mt-4 text-center align-content-center justify-center">
+                <v-icon
+                    @click.prevent="showLossInfo = !showLossInfo"
+                    x-large
+                    :color="showLossInfo ? 'red' : 'blue'">
+                  mdi-clock
+                </v-icon>
+              </v-col>
+            </v-row>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-card outlined class="pa-6" width="100%">
+          <v-row>
+            <v-col>
+              <span>Премия</span>
+              <h1>{{ this.info.currentMonth.prize.toLocaleString('hi-IN') + ' ₽' }}</h1>
+            </v-col>
+            <v-col class="mt-4" md="4">
+              <v-icon x-large color="green">mdi-currency-rub</v-icon>
+            </v-col>
+          </v-row>
+        </v-card>
       </v-col>
     </v-row>
-    <v-row class="mb-6" no-gutters>
-      <v-col>
+
+
+    <v-skeleton-loader max-width="calc(100% - 32px)" transition="scale-transition" :loading="!info.short_labels"
+                       type="image">
+      <div class="pa-4">
+        <vue-apex-charts v-if="info.labels.length" height="400" width="100%" type="line" :options="options"
+                         :series="charts.salary.series"/>
+      </div>
+    </v-skeleton-loader>
+
+    <v-row class="ma-0 ma-md-3">
+      <v-col cols="12" md="6">
         <h2>Отмеченное время</h2>
-        <div class="text-center mt-2">
-          <v-skeleton-loader max-width="calc(100% - 32px)" transition="scale-transition" :loading="!info.short_labels"
-                             type="image">
-            <v-sheet
-                class="v-sheet--offset text-center align-center white"
-                elevation="12"
-                :rounded="'lg'"
-                max-width="calc(100% - 32px)"
-            >
-              <v-skeleton-loader v-if="!info.short_labels" type="image"/>
-              <v-sparkline
-                  :labels="info.short_labels"
-                  :value="trackedValues"
-                  auto-draw
-                  stroke-linecap="round"
-                  :smooth="radius || false"
-                  color="light-blue accent-4"
-                  line-width="2"
-                  padding="16"
-              ></v-sparkline>
-            </v-sheet>
-          </v-skeleton-loader>
-        </div>
+        <v-skeleton-loader max-width="calc(100% - 32px)" transition="scale-transition" :loading="!info.short_labels"
+                           type="image">
+          <div class="pa-4">
+            <vue-apex-charts v-if="info.labels.length" width="100%" type="line" :options="options"
+                             :series="charts.time.series"/>
+          </div>
+        </v-skeleton-loader>
       </v-col>
-      <v-col class="mb-6" no-gutters>
+      <v-col cols="12" md="6">
         <h2>Премия</h2>
-        <div class="text-center mt-2">
-          <v-skeleton-loader max-width="calc(100% - 32px)" transition="scale-transition" :loading="!info.short_labels"
-                             type="image">
-            <v-sheet
-                class="v-sheet--offset text-center align-center white"
-                elevation="12"
-                :rounded="'lg'"
-                max-width="calc(100% - 32px)"
-            >
-              <v-skeleton-loader v-if="!info.short_labels" type="image"/>
-              <v-sparkline
-                  :labels="info.short_labels"
-                  :value="prizeValues"
-                  auto-draw
-                  :smooth="radius || false"
-                  stroke-linecap="round"
-                  color="light-blue accent-4"
-                  line-width="2"
-                  padding="16"
-              ></v-sparkline>
-            </v-sheet>
-          </v-skeleton-loader>
-        </div>
+        <v-skeleton-loader max-width="calc(100% - 32px)" transition="scale-transition" :loading="!info.short_labels"
+                           type="image">
+          <div class="pa-4">
+            <vue-apex-charts v-if="info.labels.length" width="100%" type="line" :options="options"
+                             :series="charts.prize.series"/>
+          </div>
+        </v-skeleton-loader>
       </v-col>
     </v-row>
 
     <h2 class="mt-4">Кол-во отмеченного времени</h2>
-    <v-row no-gutters class="text-start">
-      <v-col v-for="(item, index) in info.tracked_time" :key="index" cols="4" md="2">
-        <h3 class="mt-4 text-capitalize">{{ item.name }}</h3>
-        <v-tooltip top>
-          <template v-slot:activator="{ on, attrs }">
-            <v-progress-circular
-                :rotate="-90"
-                :size="100"
-                class="mt-2"
-                :width="15"
-                :value="item.percent"
-                :color="getColorFromPercent(item.percent)"
-                v-bind="attrs"
-                v-on="on"
-            >
-              {{ item.percent }}
-            </v-progress-circular>
-          </template>
-          <span>{{
-              item.prize === 0 ? ('Потери: ' + convertToCurrency(item.loss_salary) + '₽') : ('Премия: ' + convertToCurrency(item.prize) + '₽')
-            }}</span>
-        </v-tooltip>
-
-      </v-col>
-    </v-row>
+    <v-skeleton-loader max-width="calc(100% - 32px)" transition="scale-transition" :loading="!info.short_labels"
+                       type="image">
+      <div class="pa-4">
+        <vue-apex-charts v-if="info.labels.length" :height="this.isMobile() ? 700 : 300" width="100%" type="bar"
+                         :options="options" :series="charts.tracked.series"/>
+      </div>
+    </v-skeleton-loader>
   </v-container>
 </template>
 
 <script>
 import {mapGetters} from 'vuex'
 import dateFormat from 'dateformat'
+import VueApexCharts from 'vue-apexcharts'
+import isMobile from "@/mixins/isMobile";
 
 export default {
   name: "Index",
+  components: {
+    VueApexCharts,
+  },
+  mixins: [isMobile],
   data: () => ({
     dateFormat,
-    radius: 2,
-    gradient: ['purple', 'white'],
+    options: {
+      chart: {
+        toolbar: {
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false,
+            customIcons: []
+          },
+        },
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+        }
+      },
+      xaxis: {
+        categories: []
+      }
+    },
+    charts: {
+      salary: {
+        series: [
+          {
+            name: 'Зарплата',
+            data: []
+          },
+          {
+            name: 'Премия',
+            data: []
+          },
+        ],
+      },
+      time: {
+        series: [{
+          name: 'Время',
+          data: []
+        }],
+      },
+      prize: {
+        series: [{
+          name: 'Премия',
+          data: []
+        }],
+      },
+      tracked: {
+        series: [
+          {
+            name: 'Отмеченное время',
+            data: []
+          },
+          {
+            name: 'Рабочие часы',
+            data: []
+          },
+        ],
+      }
+    },
+
+    loading: true,
+    showLossInfo: false,
     info: {
       full: {},
       labels: [],
-      values: []
+      values: [],
+      currentMonth: {}
     },
     prizeValues: [],
     trackedValues: []
@@ -179,7 +189,8 @@ export default {
   computed: {
     ...mapGetters([
       'user',
-      'statistic'
+      'statistic',
+      'losses'
     ]),
   },
   watch: {
@@ -190,41 +201,39 @@ export default {
   created() {
     const format = 'yyyy-mm-dd'
     let start = new Date();
-    start.setMonth(start.getMonth() - 12); // за год
+    start.setMonth(start.getMonth() - 11); // за год. 11, т.к учитывается индекс
     this.$store.dispatch('statistic', {
       from: dateFormat(start, format),
       to: dateFormat(new Date(), format)
     })
+    this.$store.dispatch('losses')
   },
   mounted() {
+    this.options.plotOptions.bar.horizontal = this.isMobile()
     if (this.statistic) {
       this.loadInfo(this.statistic)
     }
   },
   methods: {
-    convertToCurrency: (value) => Number(value).toFixed(value.length >= 4 ? 3 : 2),
     loadInfo(payload) {
       if (!Object.keys(payload).length) return
 
       this.info = payload;
+      this.info.currentMonth = this.info.tracked_time[this.info.tracked_time.length - 1];
       this.prizeValues = this.info.tracked_time.map(el => el.prize)
       this.trackedValues = this.info.tracked_time.map(el => el.hours)
-    },
-    getColorFromPercent: percent => {
-      if (percent >= 95) {
-        return 'green'
-      }
+      let workHours = this.info.tracked_time.map(el => el.full_hours)
 
-      if (percent >= 85) {
-        return 'amber'
-      }
+      this.charts.prize.series[0].data = this.prizeValues
+      this.charts.time.series[0].data = this.trackedValues
+      this.charts.tracked.series[0].data = this.trackedValues
+      this.charts.tracked.series[1].data = workHours
+      this.charts.salary.series[0].data = this.info.values
+      this.charts.salary.series[1].data = this.prizeValues
 
-      return 'deep-orange'
+      this.options.xaxis.categories = this.info.labels
+      this.loading = false
     },
   }
 }
 </script>
-
-<style scoped>
-
-</style>

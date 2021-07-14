@@ -42,10 +42,23 @@
       </template>
     </v-navigation-drawer>
 
-    <v-app-bar app flat color="white">
-      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+    <v-app-bar app flat>
+        <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
-      <v-toolbar-title><b>{{ this.$router.currentRoute.meta.title || 'Статистика зарплаты' }}</b></v-toolbar-title>
+        <v-toolbar-title>
+          <b>{{ this.$router.currentRoute.meta.title || 'Статистика зарплаты' }}</b>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon v-bind="attrs" v-on="on" color="blue" class="ms-2">mdi-information-outline</v-icon>
+            </template>
+            <span>Статистика запрашивается в реальном времени</span>
+          </v-tooltip>
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <div @click.prevent="toggleTheme">
+          <v-icon class="me-3" large v-if="!$vuetify.theme.dark">mdi-moon-waxing-crescent</v-icon>
+          <v-icon class="me-3" large v-else>mdi-white-balance-sunny</v-icon>
+        </div>
     </v-app-bar>
     <app-modal></app-modal>
     <v-main>
@@ -112,6 +125,10 @@ export default {
     clickItem(action) {
       this.$router.push({name: action});
       this.closeDrawer();
+    },
+    toggleTheme() {
+      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
+      this.$store.dispatch('toggleTheme')
     }
   }
 }

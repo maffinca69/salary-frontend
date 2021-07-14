@@ -13,6 +13,8 @@ export default new Vuex.Store({
             user: {},
         },
         statistic: {},
+        losses: {},
+        is_dark_theme: !!JSON.parse(localStorage.getItem('is_dark_theme')) === true,
     },
     mutations: {
         setAccessToken: (state, accessToken) => {
@@ -26,6 +28,14 @@ export default new Vuex.Store({
         },
         setStatistic: (state, payload) => {
             state.statistic = payload;
+        },
+        setLosses: (state, payload) => {
+            state.losses = payload;
+        },
+        toggleTheme: (state) => {
+            const isDarkTheme = state.is_dark_theme;
+            state.is_dark_theme = !isDarkTheme;
+            localStorage.setItem('is_dark_theme', !isDarkTheme);
         },
         // delete all auth and user information from the state
         clearAuthData: state => {
@@ -93,6 +103,18 @@ export default new Vuex.Store({
                 }
             })
         },
+
+        losses: async ({commit}) => {
+            return await axios.get('/dashboard/losses').then(response => {
+                if (response.status === 200) {
+                    commit('setLosses', response.data)
+                }
+            })
+        },
+
+        toggleTheme: async ({commit}) => {
+            commit('toggleTheme')
+        },
     },
     modules: {},
     getters: {
@@ -100,5 +122,7 @@ export default new Vuex.Store({
         access_token: state => state.auth.access_token,
         expired: state => state.auth.expired,
         statistic: state => state.statistic,
+        losses: state => state.losses,
+        is_dark_theme: state => state.is_dark_theme || false,
     }
 });

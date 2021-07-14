@@ -5,11 +5,18 @@
   </template>
   <v-form ref="form" @submit.prevent="validate">
     <v-text-field
-        label="Redmine API KEY"
+        label="Логин"
         required
         :disabled="loading"
-        v-model="form.redmine_api_key"
-        :error-messages="errorMessages.key">
+        v-model="form.username"
+        :error-messages="errorMessages.username">
+    </v-text-field>
+    <v-text-field
+        label="Пароль"
+        required
+        :disabled="loading"
+        v-model="form.password"
+        :error-messages="errorMessages.password">
     </v-text-field>
   </v-form>
   <template v-slot:footer>
@@ -34,7 +41,8 @@ export default {
     loading: false,
     errorMessages: {},
     form: {
-      redmine_api_key: ''
+      username: '',
+      password: '',
     }
   }),
   computed: {
@@ -45,11 +53,14 @@ export default {
   mounted() {
     if (!this.user) return
 
-    this.form.redmine_api_key = this.user.redmine_api_key
+    // this.form.username = this.user.redmine.username
+    // this.form.password = this.user.redmine.password
   },
   watch: {
     user(data) {
-      this.form.redmine_api_key = data.redmine_api_key
+      console.log(data)
+      // this.form.username = data.redmine.sername
+      // this.form.password = data.redmine.password
     }
   },
   methods: {
@@ -62,6 +73,7 @@ export default {
     },
     async saveKey(payload) {
       this.loading = true
+      payload = payload.redmine
       return await axios.post('/users/update', payload).then(response => {
         const data = response.data.data
         this.form = data
